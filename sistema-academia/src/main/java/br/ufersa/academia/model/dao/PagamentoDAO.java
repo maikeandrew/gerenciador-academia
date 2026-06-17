@@ -13,7 +13,6 @@ import br.ufersa.academia.model.StatusPagamento;
 
 public class PagamentoDAO {
 
-    // --- MÉTODO CADASTRAR ---
     public boolean cadastrar(Pagamento pagamento, int idAlunoNoBanco) {
         String sql = "INSERT INTO pagamentos (aluno_id, valor, data_vencimento, status) VALUES (?, ?, ?, ?)";
         
@@ -29,13 +28,12 @@ public class PagamentoDAO {
             return linhasAfetadas > 0;
             
         } catch (SQLException e) {
-            System.err.println("🔴 Erro ao registrar pagamento no Supabase: " + e.getMessage());
+            System.err.println(" Erro ao registrar pagamento no Supabase: " + e.getMessage());
             e.printStackTrace();
             return false;
         }
     }
 
-    // --- MÉTODO LISTAR TODOS ---
     public List<Pagamento> listar() {
         String sql = "SELECT * FROM pagamentos";
         List<Pagamento> lista = new ArrayList<>();
@@ -60,12 +58,11 @@ public class PagamentoDAO {
                 lista.add(pagamento);
             }
         } catch (SQLException e) {
-            System.err.println("🔴 Erro ao listar pagamentos: " + e.getMessage());
+            System.err.println(" Erro ao listar pagamentos: " + e.getMessage());
         }
         return lista;
     }
 
-    // --- MÉTODO LISTAR POR ALUNO (Para o Portal do Aluno) ---
     public List<Pagamento> listarPorAluno(String cpfAluno) {
         String sql = "SELECT p.* FROM pagamentos p JOIN alunos a ON p.aluno_id = a.id WHERE a.cpf = ?";
         List<Pagamento> lista = new ArrayList<>();
@@ -93,12 +90,11 @@ public class PagamentoDAO {
                 }
             }
         } catch (SQLException e) {
-            System.err.println("🔴 Erro ao listar histórico do aluno: " + e.getMessage());
+            System.err.println(" Erro ao listar histórico do aluno: " + e.getMessage());
         }
         return lista;
     }
 
-    // --- MÉTODO CONFIRMAR PAGAMENTO ---
     public boolean confirmarPagamento(int idPagamentoNoBanco) {
         String sql = "UPDATE pagamentos SET status = 'PAGO', data_pagamento = CURRENT_DATE WHERE id = ?";
         
@@ -109,12 +105,11 @@ public class PagamentoDAO {
             return stmt.executeUpdate() > 0;
             
         } catch (SQLException e) {
-            System.err.println("🔴 Erro ao confirmar pagamento: " + e.getMessage());
+            System.err.println("Erro ao confirmar pagamento: " + e.getMessage());
             return false;
         }
     }
 
-    // --- MÉTODO VERIFICAR ATRASADOS ---
     public void verificaPagamentosAtrasados() {
         String sql = "UPDATE pagamentos SET status = 'ATRASADO' WHERE status = 'PENDENTE' AND data_vencimento < CURRENT_DATE";
         
@@ -123,13 +118,13 @@ public class PagamentoDAO {
             
             int linhasAfetadas = stmt.executeUpdate();
             if (linhasAfetadas > 0) {
-                System.out.println("⚠️ Aviso do Sistema: " + linhasAfetadas + " mensalidades foram marcadas como ATRASADAS hoje.");
+                System.out.println(" Aviso do Sistema: " + linhasAfetadas + " mensalidades foram marcadas como ATRASADAS hoje.");
             } else {
-                System.out.println("✅ Nenhuma mensalidade nova entrou em atraso hoje.");
+                System.out.println(" Nenhuma mensalidade nova entrou em atraso hoje.");
             }
             
         } catch (SQLException e) {
-            System.err.println("🔴 Erro ao verificar pagamentos atrasados: " + e.getMessage());
+            System.err.println(" Erro ao verificar pagamentos atrasados: " + e.getMessage());
         }
     }
 }
