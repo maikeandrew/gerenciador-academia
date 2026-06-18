@@ -43,7 +43,7 @@ public class PagamentoDAO {
     }
 
     public List<Pagamento> listar() {
-        String sql = "SELECT * FROM pagamentos";
+        String sql = "SELECT * FROM pagamentos WHERE status IN ('PENDENTE', 'ATRASADO') ORDER BY data_vencimento";
         List<Pagamento> lista = new ArrayList<>();
 
         try (Connection conn = ConexaoBanco.getConnection();
