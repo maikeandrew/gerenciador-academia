@@ -191,7 +191,7 @@ public class Main {
 
     private static void submenuPagamentos(Scanner scanner, PagamentoDAO pgDAO, AlunoDAO alunoDAO) {
         System.out.println("\n[ GERENCIAR PAGAMENTOS ]");
-        System.out.println("1. Gerar Nova Mensalidade | 2. Listar Todos | 3. Confirmar Pagamento | 4. Voltar");
+        System.out.println("1. Gerar Nova Mensalidade | 2. Listar Pendentes/Atrasados | 3. Confirmar Pagamento | 4. Voltar");
         System.out.print("Opção: ");
         int op = scanner.nextInt(); scanner.nextLine();
         
@@ -222,7 +222,16 @@ public class Main {
             }
             
         } else if (op == 2) {
-            for(Pagamento p : pgDAO.listar()) {
+            pgDAO.verificaPagamentosAtrasados();
+            List<Pagamento> pagamentos = pgDAO.listar();
+
+            if (pagamentos.isEmpty()) {
+                System.out.println("Nenhum pagamento pendente ou atrasado encontrado.");
+                return;
+            }
+
+            System.out.println("\n[ PAGAMENTOS PENDENTES E ATRASADOS ]");
+            for(Pagamento p : pagamentos) {
                 System.out.println("ID: " + p.getId() + " | Valor: " + p.getValor() + " | Status: " + p.getStatus() + " | Vencimento: " + p.getDataVencimento());
             }
         } else if (op == 3) {
