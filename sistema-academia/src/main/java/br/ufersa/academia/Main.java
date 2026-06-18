@@ -199,9 +199,9 @@ public class Main {
             System.out.print("Digite o CPF do aluno: ");
             String cpf = scanner.nextLine();
             
-            // Busca o aluno pelo CPF para pegar o ID e o Valor dele
+        
             Aluno alunoEncontrado = null;
-            int idAlunoNoBanco = 0; // Precisamos do ID real dele no banco
+            int idAlunoNoBanco = 0; 
             
             for(Aluno a : alunoDAO.listar()) {
                 if(a.getCpf().equals(cpf)) {
