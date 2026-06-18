@@ -17,8 +17,7 @@ public class Instrutor extends Usuario {
     }
 
 
-    @Override
-    public void verUsuario() {
+    public void verInstrutor() {
         
         super.verUsuario();
         System.out.println("Cargo: " + (this.ehGerente ? "Gerente" : "Instrutor Comum"));

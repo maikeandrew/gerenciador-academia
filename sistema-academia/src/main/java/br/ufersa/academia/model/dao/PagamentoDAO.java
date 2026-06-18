@@ -15,18 +15,26 @@ public class PagamentoDAO {
 
     public boolean cadastrar(Pagamento pagamento, int idAlunoNoBanco) {
         String sql = "INSERT INTO pagamentos (aluno_id, valor, data_vencimento, status) VALUES (?, ?, ?, ?)";
-        
+
         try (Connection conn = ConexaoBanco.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
+             PreparedStatement stmt = conn.prepareStatement(sql, java.sql.Statement.RETURN_GENERATED_KEYS)) {
+
             stmt.setInt(1, idAlunoNoBanco);
             stmt.setDouble(2, pagamento.getValor());
             stmt.setDate(3, Date.valueOf(pagamento.getDataVencimento()));
-            stmt.setString(4, pagamento.getStatus().name()); 
-            
+            stmt.setString(4, pagamento.getStatus().name());
+
             int linhasAfetadas = stmt.executeUpdate();
-            return linhasAfetadas > 0;
-            
+            if (linhasAfetadas > 0) {
+                try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
+                    if (generatedKeys.next()) {
+                        pagamento.setId(generatedKeys.getInt(1));
+                    }
+                }
+                return true;
+            }
+            return false;
+
         } catch (SQLException e) {
             System.err.println(" Erro ao registrar pagamento no Supabase: " + e.getMessage());
             e.printStackTrace();
@@ -108,6 +116,86 @@ public class PagamentoDAO {
             System.err.println("Erro ao confirmar pagamento: " + e.getMessage());
             return false;
         }
+    }
+
+    public boolean editar(Pagamento pagamento) {
+        String sql = "UPDATE pagamentos SET valor = ?, data_vencimento = ?, data_pagamento = ?, status = ? WHERE id = ?";
+
+        try (Connection conn = ConexaoBanco.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setDouble(1, pagamento.getValor());
+
+            if (pagamento.getDataVencimento() != null) {
+                stmt.setDate(2, Date.valueOf(pagamento.getDataVencimento()));
+            } else {
+                stmt.setNull(2, java.sql.Types.DATE);
+            }
+
+            if (pagamento.getDataPagamento() != null) {
+                stmt.setDate(3, Date.valueOf(pagamento.getDataPagamento()));
+            } else {
+                stmt.setNull(3, java.sql.Types.DATE);
+            }
+
+            if (pagamento.getStatus() != null) {
+                stmt.setString(4, pagamento.getStatus().name());
+            } else {
+                stmt.setNull(4, java.sql.Types.VARCHAR);
+            }
+
+            stmt.setInt(5, pagamento.getId());
+
+            return stmt.executeUpdate() > 0;
+
+        } catch (SQLException e) {
+            System.err.println("Erro ao editar pagamento: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean excluir(int idPagamentoNoBanco) {
+        String sql = "DELETE FROM pagamentos WHERE id = ?";
+
+        try (Connection conn = ConexaoBanco.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, idPagamentoNoBanco);
+            return stmt.executeUpdate() > 0;
+
+        } catch (SQLException e) {
+            System.err.println("Erro ao excluir pagamento: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public List<Pagamento> listarAtrasados() {
+        String sql = "SELECT * FROM pagamentos WHERE status = 'ATRASADO'";
+        List<Pagamento> lista = new ArrayList<>();
+
+        try (Connection conn = ConexaoBanco.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                Pagamento pagamento = new Pagamento();
+                pagamento.setId(rs.getInt("id"));
+                pagamento.setValor(rs.getDouble("valor"));
+
+                if (rs.getDate("data_vencimento") != null) {
+                    pagamento.setDataVencimento(rs.getDate("data_vencimento").toLocalDate());
+                }
+                if (rs.getDate("data_pagamento") != null) {
+                    pagamento.setDataPagamento(rs.getDate("data_pagamento").toLocalDate());
+                }
+
+                pagamento.setStatus(StatusPagamento.valueOf(rs.getString("status")));
+                lista.add(pagamento);
+            }
+        } catch (SQLException e) {
+            System.err.println(" Erro ao listar pagamentos atrasados: " + e.getMessage());
+        }
+        return lista;
     }
 
     public void verificaPagamentosAtrasados() {

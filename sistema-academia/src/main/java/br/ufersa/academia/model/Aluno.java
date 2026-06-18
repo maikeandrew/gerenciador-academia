@@ -27,8 +27,7 @@ public class Aluno extends Usuario {
 
     
 
-    @Override
-    public void verUsuario() {
+    public void verAluno() {
         super.verUsuario();
         System.out.println("Matrícula: " + this.matricula);
         System.out.println("Vencimento da Matrícula: " + this.dataFimMatricula);
