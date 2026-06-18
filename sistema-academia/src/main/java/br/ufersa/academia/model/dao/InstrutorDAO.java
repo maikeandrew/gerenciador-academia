@@ -15,7 +15,7 @@ public class InstrutorDAO {
         String sql = "INSERT INTO instrutores (nome, cpf, login, senha, ativo, eh_gerente) VALUES (?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = ConexaoBanco.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql)) {
+                PreparedStatement stmt = conn.prepareStatement(sql, java.sql.Statement.RETURN_GENERATED_KEYS)) {
 
             stmt.setString(1, instrutor.getNome());
             stmt.setString(2, instrutor.getCpf());
@@ -25,7 +25,15 @@ public class InstrutorDAO {
             stmt.setBoolean(6, instrutor.isEhGerente());
 
             int linhasAfetadas = stmt.executeUpdate();
-            return linhasAfetadas > 0;
+            if (linhasAfetadas > 0) {
+                try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
+                    if (generatedKeys.next()) {
+                        instrutor.setId(generatedKeys.getInt(1));
+                    }
+                }
+                return true;
+            }
+            return false;
 
         } catch (SQLException e) {
             System.err.println("🔴 Erro ao cadastrar instrutor no Supabase: " + e.getMessage());
@@ -44,6 +52,7 @@ public class InstrutorDAO {
 
             while (rs.next()) {
                 Instrutor instrutor = new Instrutor();
+                instrutor.setId(rs.getInt("id"));
                 instrutor.setNome(rs.getString("nome"));
                 instrutor.setCpf(rs.getString("cpf"));
                 instrutor.setLogin(rs.getString("login"));
