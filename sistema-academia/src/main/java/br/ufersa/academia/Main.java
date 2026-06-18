@@ -18,7 +18,6 @@ public class Main {
         AlunoDAO alunoDAO = new AlunoDAO();
         PagamentoDAO pagamentoDAO = new PagamentoDAO(); 
         
-        // --- REGRA DO RELATÓRIO: Ação obrigatória ao iniciar o sistema ---
         System.out.println("Inicializando sistema e verificando pendências...");
         pagamentoDAO.verificaPagamentosAtrasados(); 
         
@@ -27,7 +26,6 @@ public class Main {
 
         System.out.println("\n=== SISTEMA ACADEMIA ===");
         
-        // --- FASE 1: AUTENTICAÇÃO ---
         while (usuarioLogado == null) {
             System.out.print("Usuário/Login: ");
             String login = scanner.nextLine();
@@ -53,7 +51,6 @@ public class Main {
 
         System.out.println("\n🎉 Login realizado com sucesso! Perfil: " + perfilDeAcesso);
 
-        // --- FASE 2: DIRECIONAMENTO DE TELAS ---
         switch (perfilDeAcesso) {
             case "GERENTE":
                 menuGerente(scanner, (Instrutor) usuarioLogado, alunoDAO, instrutorDAO, pagamentoDAO);
@@ -70,9 +67,7 @@ public class Main {
         scanner.close();
     }
 
-    // ==========================================================
-    // MENUS PRINCIPAIS
-    // ==========================================================
+    
     
     private static void menuGerente(Scanner scanner, Instrutor gerente, AlunoDAO alunoDAO, InstrutorDAO instrutorDAO, PagamentoDAO pgDAO) {
         int opcao = 0;
@@ -148,9 +143,6 @@ public class Main {
         }
     }
 
-    // ==========================================================
-    // SUBMENUS DE GERENCIAMENTO 
-    // ==========================================================
     
     private static void submenuInstrutores(Scanner scanner, InstrutorDAO instrutorDAO) {
         System.out.println("\n[ GERENCIAR INSTRUTORES ]");
@@ -214,16 +206,13 @@ public class Main {
             for(Aluno a : alunoDAO.listar()) {
                 if(a.getCpf().equals(cpf)) {
                     alunoEncontrado = a;
-                    // Como não colocamos getId() no Aluno explícito no loop, você pode precisar 
-                    // adaptar se o Aluno não tiver o atributo 'id' mapeado da classe Usuario
-                    // O ideal é que o Aluno tenha o getId() herdado de Usuario.
                     idAlunoNoBanco = a.getId(); 
                     break;
                 }
             }
             
             if (alunoEncontrado != null) {
-                // Cria com vencimento para daqui a 30 dias
+               
                 Pagamento novoPg = new Pagamento(alunoEncontrado, alunoEncontrado.getValorMensal(), LocalDate.now().plusMonths(1));
                 if (pgDAO.cadastrar(novoPg, idAlunoNoBanco)) {
                     System.out.println("✅ Mensalidade gerada com sucesso!");
